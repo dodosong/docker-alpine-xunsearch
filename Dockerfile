@@ -6,23 +6,25 @@
 #
 # START COMMAND:
 # docker run -d --name xunsearch -p 8383:8383 -p 8384:8384 \
-# -v /var/xunsearch/data:/usr/local/xunsearch/data hightman/xunsearch:latest
+# -v /var/xunsearch/data:/usr/local/xunsearch/data dodosong/xunsearch:alpine
 #
 
 FROM alpine:3.8
 LABEL maintainer="dodosong <dodosong@gmail.com>" version="1.0"
-
-## --build-arg timezone=Asia/Shanghai
-ARG timezone
-
-ENV TIMEZONE=${timezone:-"Asia/Shanghai"}
 
 ## Change repositories, add dnspod's dns for china, apk update
 RUN  set -ex \
   && echo -e 'nameserver 119.29.29.29' >> /etc/resolv.conf \
   && sed -i 's/http[s]*:\/\/dl-cdn.alpinelinux.org/https:\/\/mirror.tuna.tsinghua.edu.cn/' /etc/apk/repositories \
   && apk update
- 
+
+## --build-arg timezone=Asia/Shanghai
+RUN apk --update add tzdata \
+    && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && echo "Asia/Shanghai" > /etc/timezone \
+    && apk del tzdata
+
+## ---------------
 ## Install build tools.  alpine-sdk contains build-base and build-base contains gcc,libc,make,g++
 RUN apk add --no-cache gcc tar make g++ bzip2 zlib-dev
 
